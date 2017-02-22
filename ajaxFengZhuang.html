@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>原生js的ajax</title>
+</head>
+<body>
+<!--
+    原生js封装ajax方法
+
+-->
+
+<script>
+    //1.处理get请求
+    function ajax(option){
+        //1.实例化ajax
+
+        var xhr = window.XMLHttpRequest?new XMLHttpRequest():new ActiveXObject("microsoft.xmlhttp");
+
+        //2.判断请求方式是否为get
+        var isGET = /get/i.test(option.method);
+
+
+        //3. 将json数据转换为字符串格式  属性名=值&。。。
+        var data = "";
+        for(var i in option.data){
+            //4.将数据拼成字符串
+            data +=i+"="+ option.data[i]+"&";
+        }
+
+        //5.将处理好的数据字符串替换原有的数据
+        option.data = data;
+
+        //判断是否是get方法，如果是检查url中有没有？然后再把data数据加到？后
+        if(isGET){
+            if(option.url.indexOf("?")<0){
+                option.url+='?';
+            }
+            option.url+=+"&"+option.data;
+        }
+
+        //6 判断是否启用缓存，如果不启用缓存 添加时间
+        if(!option.cache){
+            //7向URL上补充时间
+            option.url+="&___="+new Date().getTime();
+        }
+        //打开连接
+        xhr.open(option.method,option.url,option.async);
+        //7.如果是post请求则设置请求头
+        if(!isGET){
+            xhr.setRequestHeader('content-type','application/xml-form-urlencoded');
+        }
+
+        //8.发送请求
+        xhr.send(option.data);
+        //9.ajax状态改变时触发函数
+        xhr.onreadystatechange = function(){
+            //判断ajax是否加载完成
+            if(xhr.readyState == 4){
+                //判断页面是否请求成功
+                if(xhr.status == 200){
+                    option.success(xhr.responseText);
+                }else{
+                    option.error(xhr.status)
+                }
+            }
+
+        }
+
+    }
+
+    ajax({
+        method:'get',
+        url:"01.php?name=Kitty",
+        async:true,
+        data:{age:12,sex:"girl"},
+        cache:true,
+        sendBefore:function(xhr){
+            console.log("loading···");
+        },
+        sendComplete:function(xhr){
+            console.log("loading完成");
+        },
+        success:function(txt){
+            console.log("请求成功，服务器返回数据为:"+txt);
+        },
+        error:function(status){
+            console.log("请求失败状态码为:"+status);
+        }
+    });
+
+</script>
+</body>
+</html>
